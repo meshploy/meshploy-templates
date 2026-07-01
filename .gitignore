@@ -1,2 +1,8 @@
 .DS_Store
 *.swp
+
+# Go build output (the index generator is normally `go run`, not built)
+/build-index
+/build-index.exe
+/tools/build-index/build-index
+/tools/build-index/build-index.exe

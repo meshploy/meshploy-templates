@@ -1,0 +1,52 @@
+name: Build catalog index
+
+# On PRs: validate every template and fail if index.json is stale.
+# On push to main: regenerate index.json and commit it back.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "templates/**"
+      - "tools/**"
+      - "go.mod"
+      - ".github/workflows/build-index.yml"
+  pull_request:
+    paths:
+      - "templates/**"
+      - "tools/**"
+      - "go.mod"
+
+permissions:
+  contents: write # needed to commit the regenerated index.json back to main
+
+jobs:
+  build-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      # PRs: validate manifests + variable/placeholder mapping + pinned tags,
+      # and fail if the committed index.json doesn't match the templates.
+      - name: Validate
+        if: github.event_name == 'pull_request'
+        run: go run ./tools/build-index --check
+
+      # main: regenerate and commit only if index.json actually changed.
+      # [skip ci] on the bot commit prevents a self-trigger loop.
+      - name: Generate and commit
+        if: github.event_name == 'push'
+        run: |
+          go run ./tools/build-index
+          if [[ -n "$(git status --porcelain index.json)" ]]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add index.json
+            git commit -m "chore: regenerate index.json [skip ci]"
+            git push
+          else
+            echo "index.json already up to date"
+          fi

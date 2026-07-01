@@ -16,6 +16,22 @@ templates/<id>/
 ├── meta.yaml           # catalog metadata + variable declarations
 ├── docker-compose.yml  # standard compose + x-meshploy blocks
 └── logo.svg            # icon
+
+index.json              # GENERATED — flat catalog a Meshploy install fetches (do not hand-edit)
+tools/build-index/      # Go generator + validator (also the CI gate)
+```
+
+## The catalog index (`index.json`)
+
+`index.json` is a generated, flat list of every template's manifest — the file a
+Meshploy install fetches to render the gallery. **Never edit it by hand.** It is
+regenerated from the `templates/` tree by CI on every push to `main`, and the
+same tool gates PRs. A Meshploy install prefers this file (one request); if it
+is absent it falls back to discovering templates via the GitHub API.
+
+```bash
+go run ./tools/build-index          # validate + (re)write index.json
+go run ./tools/build-index --check  # validate only; fail if index.json is stale (CI on PRs)
 ```
 
 ## Adding a template
@@ -25,7 +41,10 @@ templates/<id>/
    `docker-compose.yml` with `${VAR}` placeholders that map to the declared
    variables.
 3. Pin image tags (no `:latest`).
-4. Open a PR — CI validates the manifest and the variable/placeholder mapping.
+4. Run `go run ./tools/build-index` and commit the updated `index.json` (or let
+   CI regenerate it on merge).
+5. Open a PR — CI validates the manifest, the variable/placeholder mapping, and
+   pinned image tags.
 
 ## Variables
 
