@@ -1,0 +1,16 @@
+# Uptime Kuma — monitors endpoints and serves status pages.
+# Single service: all state (checks, history, users) lives in the mounted volume.
+# The first account is created through the web UI on first visit.
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1.23.16
+    volumes:
+      - uptime-kuma-data:/app/data
+    x-meshploy:
+      type: application
+      deploy:
+        port: 3001
+        replicas: 1
+
+volumes:
+  uptime-kuma-data:

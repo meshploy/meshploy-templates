@@ -1,0 +1,17 @@
+id: gitea
+name: Gitea
+description: Lightweight self-hosted Git service with issues, pull requests and CI hooks.
+category: application
+version: 1.0.0
+icon: logo.svg
+links:
+  website: https://about.gitea.com
+  source: https://github.com/go-gitea/gitea
+maintainers: [pritthishnath]
+
+variables:
+  - key: PRIMARY_DOMAIN
+    generate: subdomain
+    expose:
+      service: gitea
+      port: 3000

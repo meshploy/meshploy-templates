@@ -1,0 +1,25 @@
+# Stirling PDF — a local PDF toolkit.
+#
+# Files are processed in the container and not retained, which is the point:
+# nothing is uploaded to a third party. The volume holds configuration and any
+# custom fonts, not user documents.
+#
+# Login is disabled so the instance is usable immediately. Since Meshploy
+# publishes it on a public subdomain, set DOCKER_ENABLE_SECURITY=true and
+# configure accounts if it should not be open.
+services:
+  stirling-pdf:
+    image: stirlingtools/stirling-pdf:2.14.3
+    environment:
+      DOCKER_ENABLE_SECURITY: "false"
+      LANGS: en_GB
+    volumes:
+      - stirling-config:/configs
+    x-meshploy:
+      type: application
+      deploy:
+        port: 8080
+        replicas: 1
+
+volumes:
+  stirling-config:

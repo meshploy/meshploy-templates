@@ -1,0 +1,42 @@
+# Umami — privacy-friendly analytics, backed by Postgres.
+#
+# Two services: the app, and a Meshploy-managed database. The x-meshploy
+# database block is what makes the second one a real managed database rather
+# than a loose container — Meshploy provisions the volume and derives the image
+# from engine+version, so the image below is only a hint.
+#
+# db_password is set explicitly rather than left blank. Meshploy generates one
+# when it is omitted, and the app would then have no way to learn it; declaring
+# it as a template variable lets the same generated value reach both sides.
+#
+# The app reaches the database over Kubernetes service DNS by its compose
+# service name (umami-db), so nothing is published for the database itself.
+#
+# APP_SECRET signs session tokens. Changing it later logs everyone out.
+#
+# First login is admin / umami — change it immediately, the instance is on a
+# public subdomain.
+services:
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-v2.19.0
+    environment:
+      DATABASE_URL: postgresql://umami:${DB_PASSWORD}@umami-db:5432/umami
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${APP_SECRET}
+    x-meshploy:
+      type: application
+      deploy:
+        port: 3000
+        replicas: 1
+
+  umami-db:
+    image: postgres:16
+    x-meshploy:
+      type: database
+      database:
+        engine: postgres
+        version: "16"
+        storage_gb: 5
+        db_name: umami
+        db_user: umami
+        db_password: ${DB_PASSWORD}

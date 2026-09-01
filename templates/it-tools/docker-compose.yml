@@ -1,0 +1,13 @@
+# IT Tools — ~80 developer utilities in the browser.
+#
+# Entirely client-side: every conversion, hash and token runs in the visitor's
+# browser, so the container holds no state and needs no volume. That also means
+# data pasted into it never reaches the server.
+services:
+  it-tools:
+    image: corentinth/it-tools:2024.10.22-7ca5933
+    x-meshploy:
+      type: application
+      deploy:
+        port: 80
+        replicas: 1

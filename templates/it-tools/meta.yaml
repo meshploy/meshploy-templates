@@ -1,0 +1,17 @@
+id: it-tools
+name: IT Tools
+description: A collection of handy developer utilities — converters, generators, formatters.
+category: application
+version: 1.0.0
+icon: logo.svg
+links:
+  website: https://it-tools.tech
+  source: https://github.com/CorentinTh/it-tools
+maintainers: [pritthishnath]
+
+variables:
+  - key: PRIMARY_DOMAIN
+    generate: subdomain
+    expose:
+      service: it-tools
+      port: 80

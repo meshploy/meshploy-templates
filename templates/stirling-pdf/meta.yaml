@@ -1,0 +1,17 @@
+id: stirling-pdf
+name: Stirling PDF
+description: Split, merge, convert, OCR and sign PDFs entirely on your own server.
+category: application
+version: 1.0.0
+icon: logo.svg
+links:
+  website: https://stirlingpdf.com
+  source: https://github.com/Stirling-Tools/Stirling-PDF
+maintainers: [pritthishnath]
+
+variables:
+  - key: PRIMARY_DOMAIN
+    generate: subdomain
+    expose:
+      service: stirling-pdf
+      port: 8080

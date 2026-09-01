@@ -1,0 +1,28 @@
+# ntfy — HTTP-based pub-sub notifications.
+#
+# BASE_URL must be the public URL: the mobile apps and the web UI build
+# subscription links from it.
+#
+# Access defaults to read-write for anyone who can reach the instance. Meshploy
+# publishes it on a public subdomain, so set NTFY_AUTH_DEFAULT_ACCESS to
+# deny-all and create users with `ntfy user add` if it is not meant to be open.
+services:
+  ntfy:
+    image: binwiederhier/ntfy:v2.28.0
+    command: serve
+    environment:
+      NTFY_BASE_URL: https://${PRIMARY_DOMAIN}
+      NTFY_BEHIND_PROXY: "true"
+      NTFY_LISTEN_HTTP: ":80"
+      NTFY_CACHE_FILE: /var/cache/ntfy/cache.db
+      NTFY_AUTH_FILE: /var/cache/ntfy/auth.db
+    volumes:
+      - ntfy-data:/var/cache/ntfy
+    x-meshploy:
+      type: application
+      deploy:
+        port: 80
+        replicas: 1
+
+volumes:
+  ntfy-data:

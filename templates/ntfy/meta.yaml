@@ -1,0 +1,17 @@
+id: ntfy
+name: ntfy
+description: Send push notifications to your phone or desktop over HTTP.
+category: application
+version: 1.0.0
+icon: logo.svg
+links:
+  website: https://ntfy.sh
+  source: https://github.com/binwiederhier/ntfy
+maintainers: [pritthishnath]
+
+variables:
+  - key: PRIMARY_DOMAIN
+    generate: subdomain
+    expose:
+      service: ntfy
+      port: 80

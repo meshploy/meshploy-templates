@@ -1,0 +1,24 @@
+# Vaultwarden — Bitwarden-compatible server in a single container.
+#
+# DOMAIN must match the public URL exactly: WebAuthn, U2F and email links are
+# all derived from it, and a mismatch breaks login rather than degrading it.
+#
+# SIGNUPS_ALLOWED is left on so you can create the first account. Turn it off in
+# the service's environment once you have.
+services:
+  vaultwarden:
+    image: vaultwarden/server:1.37.2-alpine
+    environment:
+      DOMAIN: https://${PRIMARY_DOMAIN}
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      SIGNUPS_ALLOWED: "true"
+    volumes:
+      - vaultwarden-data:/data
+    x-meshploy:
+      type: application
+      deploy:
+        port: 80
+        replicas: 1
+
+volumes:
+  vaultwarden-data:

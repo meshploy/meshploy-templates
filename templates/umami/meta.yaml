@@ -1,0 +1,21 @@
+id: umami
+name: Umami
+description: Privacy-focused web analytics — a self-hosted alternative to Google Analytics.
+category: analytics
+version: 1.0.0
+icon: logo.svg
+links:
+  website: https://umami.is
+  source: https://github.com/umami-software/umami
+maintainers: [pritthishnath]
+
+variables:
+  - key: APP_SECRET
+    generate: secret64
+  - key: DB_PASSWORD
+    generate: password
+  - key: PRIMARY_DOMAIN
+    generate: subdomain
+    expose:
+      service: umami
+      port: 3000

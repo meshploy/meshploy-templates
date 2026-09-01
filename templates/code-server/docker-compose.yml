@@ -1,0 +1,27 @@
+# code-server — VS Code served over HTTP.
+#
+# The password is generated once and is the only thing between the internet and
+# a shell on your node: the editor has a terminal. Treat this as a privileged
+# workload and consider putting it on an internal route rather than a public
+# subdomain.
+#
+# /config holds settings, extensions and the default workspace.
+services:
+  code-server:
+    image: linuxserver/code-server:4.135.0
+    environment:
+      PASSWORD: ${EDITOR_PASSWORD}
+      PUID: "1000"
+      PGID: "1000"
+      TZ: UTC
+      DEFAULT_WORKSPACE: /config/workspace
+    volumes:
+      - code-server-config:/config
+    x-meshploy:
+      type: application
+      deploy:
+        port: 8443
+        replicas: 1
+
+volumes:
+  code-server-config:

@@ -1,0 +1,17 @@
+id: adminer
+name: Adminer
+description: Single-file database management for PostgreSQL, MySQL, SQLite and more.
+category: database
+version: 1.0.0
+icon: logo.svg
+links:
+  website: https://www.adminer.org
+  source: https://github.com/vrana/adminer
+maintainers: [pritthishnath]
+
+variables:
+  - key: PRIMARY_DOMAIN
+    generate: subdomain
+    expose:
+      service: adminer
+      port: 8080

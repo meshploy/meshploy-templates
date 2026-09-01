@@ -1,0 +1,24 @@
+# Verdaccio — a private npm registry that also caches the public one.
+#
+# Point a project at it with:
+#   npm config set registry https://<this-domain>
+#   npm adduser --registry https://<this-domain>
+#
+# The volume holds published tarballs and the cache. Anyone may register by
+# default; edit /verdaccio/conf/config.yaml to restrict publish access before
+# putting anything private in it.
+services:
+  verdaccio:
+    image: verdaccio/verdaccio:6.10.1
+    environment:
+      VERDACCIO_PORT: "4873"
+    volumes:
+      - verdaccio-storage:/verdaccio/storage
+    x-meshploy:
+      type: application
+      deploy:
+        port: 4873
+        replicas: 1
+
+volumes:
+  verdaccio-storage:

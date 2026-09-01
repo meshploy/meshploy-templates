@@ -1,0 +1,31 @@
+# n8n — visual workflow automation.
+#
+# N8N_ENCRYPTION_KEY encrypts stored credentials. It is generated once and must
+# never change afterwards: rotating it makes every saved credential
+# undecryptable, so treat it as part of the data, not as config.
+#
+# WEBHOOK_URL must be the public URL — workflows hand it to third parties as the
+# callback address, and a wrong value fails only when an external service calls
+# back.
+#
+# SQLite by default, which keeps this a single service.
+services:
+  n8n:
+    image: n8nio/n8n:2.38.1
+    environment:
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      N8N_HOST: ${PRIMARY_DOMAIN}
+      N8N_PORT: "5678"
+      N8N_PROTOCOL: https
+      WEBHOOK_URL: https://${PRIMARY_DOMAIN}/
+      GENERIC_TIMEZONE: UTC
+    volumes:
+      - n8n-data:/home/node/.n8n
+    x-meshploy:
+      type: application
+      deploy:
+        port: 5678
+        replicas: 1
+
+volumes:
+  n8n-data:

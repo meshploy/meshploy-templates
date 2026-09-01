@@ -1,0 +1,19 @@
+id: vaultwarden
+name: Vaultwarden
+description: Lightweight Bitwarden-compatible password manager server.
+category: application
+version: 1.0.0
+icon: logo.svg
+links:
+  website: https://github.com/dani-garcia/vaultwarden
+  source: https://github.com/dani-garcia/vaultwarden
+maintainers: [pritthishnath]
+
+variables:
+  - key: ADMIN_TOKEN
+    generate: secret64
+  - key: PRIMARY_DOMAIN
+    generate: subdomain
+    expose:
+      service: vaultwarden
+      port: 80

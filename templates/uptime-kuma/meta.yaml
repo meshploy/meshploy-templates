@@ -1,0 +1,17 @@
+id: uptime-kuma
+name: Uptime Kuma
+description: Self-hosted uptime monitoring with status pages and alerting.
+category: monitoring
+version: 1.0.0
+icon: logo.svg
+links:
+  website: https://uptime.kuma.pet
+  source: https://github.com/louislam/uptime-kuma
+maintainers: [pritthishnath]
+
+variables:
+  - key: PRIMARY_DOMAIN
+    generate: subdomain
+    expose:
+      service: uptime-kuma
+      port: 3001

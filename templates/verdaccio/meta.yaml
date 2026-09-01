@@ -1,0 +1,17 @@
+id: verdaccio
+name: Verdaccio
+description: Private npm registry and proxy cache for your own packages.
+category: application
+version: 1.0.0
+icon: logo.svg
+links:
+  website: https://verdaccio.org
+  source: https://github.com/verdaccio/verdaccio
+maintainers: [pritthishnath]
+
+variables:
+  - key: PRIMARY_DOMAIN
+    generate: subdomain
+    expose:
+      service: verdaccio
+      port: 4873

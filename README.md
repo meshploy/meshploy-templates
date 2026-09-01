@@ -68,4 +68,16 @@ web-facing service. It drives **routing**, so it does not need to appear as a
 
 | id | name | category |
 |----|------|----------|
+| `umami` | Umami | analytics |
+| `code-server` | code-server | application |
+| `gitea` | Gitea | application |
+| `it-tools` | IT Tools | application |
+| `minio` | MinIO | application |
+| `n8n` | n8n | application |
+| `ntfy` | ntfy | application |
+| `stirling-pdf` | Stirling PDF | application |
+| `vaultwarden` | Vaultwarden | application |
+| `verdaccio` | Verdaccio | application |
+| `adminer` | Adminer | database |
 | `pgadmin` | pgAdmin 4 | database |
+| `uptime-kuma` | Uptime Kuma | monitoring |

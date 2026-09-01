@@ -1,0 +1,19 @@
+id: code-server
+name: code-server
+description: VS Code in the browser, running on your own node.
+category: application
+version: 1.0.0
+icon: logo.svg
+links:
+  website: https://coder.com/docs/code-server
+  source: https://github.com/coder/code-server
+maintainers: [pritthishnath]
+
+variables:
+  - key: EDITOR_PASSWORD
+    generate: password
+  - key: PRIMARY_DOMAIN
+    generate: subdomain
+    expose:
+      service: code-server
+      port: 8443

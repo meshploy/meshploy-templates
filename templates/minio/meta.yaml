@@ -1,0 +1,22 @@
+id: minio
+name: MinIO
+description: S3-compatible object storage — a backup target you own.
+category: application
+version: 1.0.0
+icon: logo.svg
+links:
+  website: https://min.io
+  source: https://github.com/minio/minio
+maintainers: [pritthishnath]
+
+variables:
+  - key: MINIO_ROOT_USER
+    prompt: "Root access key"
+    required: true
+  - key: MINIO_ROOT_PASSWORD
+    generate: password
+  - key: PRIMARY_DOMAIN
+    generate: subdomain
+    expose:
+      service: minio
+      port: 9000

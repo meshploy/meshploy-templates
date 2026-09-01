@@ -1,0 +1,15 @@
+# Adminer — database admin in one PHP file.
+#
+# Stateless by design: it stores nothing and holds no credentials, so there is
+# no volume. You enter a server, user and password at the login screen each
+# session. Reach other Meshploy databases over the mesh by their service name.
+#
+# A lighter alternative to pgAdmin, and it speaks MySQL, SQLite and others too.
+services:
+  adminer:
+    image: adminer:5.5.1
+    x-meshploy:
+      type: application
+      deploy:
+        port: 8080
+        replicas: 1

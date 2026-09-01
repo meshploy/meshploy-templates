@@ -1,0 +1,32 @@
+# Gitea — Git hosting with issues and pull requests.
+#
+# Runs on SQLite so this stays a single service. The database is a file in the
+# mounted volume; for a team large enough to need Postgres, add one and set
+# GITEA__database__* accordingly.
+#
+# ROOT_URL must match the public URL: clone links, webhooks and OAuth redirects
+# are all built from it.
+#
+# Only HTTP is published. Git over SSH needs port 22 on a node, which Meshploy
+# routes by hostname rather than raw TCP — clone over HTTPS instead.
+services:
+  gitea:
+    image: gitea/gitea:1.27.3
+    environment:
+      GITEA__database__DB_TYPE: sqlite3
+      GITEA__server__DOMAIN: ${PRIMARY_DOMAIN}
+      GITEA__server__ROOT_URL: https://${PRIMARY_DOMAIN}/
+      GITEA__server__HTTP_PORT: "3000"
+      GITEA__service__DISABLE_REGISTRATION: "false"
+      USER_UID: "1000"
+      USER_GID: "1000"
+    volumes:
+      - gitea-data:/data
+    x-meshploy:
+      type: application
+      deploy:
+        port: 3000
+        replicas: 1
+
+volumes:
+  gitea-data:
