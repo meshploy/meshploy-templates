@@ -4,6 +4,13 @@
 services:
   uptime-kuma:
     image: louislam/uptime-kuma:1.23.16
+    environment:
+      # Uptime Kuma reads UPTIME_KUMA_HOST as the address to BIND. A platform
+      # that also derives a service-discovery variable from the service name
+      # produces the same key meaning the opposite thing -- an address to reach
+      # it at -- and the app then tries to bind an address it does not own.
+      # Pinning it here keeps the app listening on all interfaces regardless.
+      UPTIME_KUMA_HOST: 0.0.0.0
     volumes:
       - uptime-kuma-data:/app/data
     x-meshploy:
