@@ -22,6 +22,13 @@ services:
       deploy:
         port: 8443
         replicas: 1
+        # code-server is VS Code's server: a Node process plus extension hosts and
+        # whatever language server the user opens. 512Mi is a working IDE that
+        # dies when a project is loaded.
+        memory_request: 512Mi
+        memory_limit: 1Gi
+        cpu_request: 200m
+        cpu_limit: 1000m
 
 volumes:
   code-server-config:

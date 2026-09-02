@@ -20,6 +20,14 @@ services:
       deploy:
         port: 8080
         replicas: 1
+        # Stirling PDF runs on the JVM and shells out to LibreOffice and Ghostscript
+        # for conversions. The default 512Mi is below what the heap plus a
+        # conversion subprocess needs, and it fails mid-conversion rather than
+        # at startup, which is harder to attribute.
+        memory_request: 512Mi
+        memory_limit: 1Gi
+        cpu_request: 200m
+        cpu_limit: 1000m
 
 volumes:
   stirling-config:

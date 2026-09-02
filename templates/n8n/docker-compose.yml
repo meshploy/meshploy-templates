@@ -26,6 +26,20 @@ services:
       deploy:
         port: 5678
         replicas: 1
+        # The limit is a ceiling, not a reservation: only the request is held on
+        # the node, so a generous limit costs nothing until it is used.
+        #
+        # It has to be generous because Node sizes V8's heap from the CGROUP
+        # LIMIT, not from what the process needs. Measured at a 2Gi limit this
+        # instance settles at ~330Mi -- but at 512Mi V8 caps old space near
+        # 250MB, thrashes, and aborts with "Ineffective mark-compacts near heap
+        # limit" once the editor loads. It aborts itself before the cgroup kills
+        # it, so the pod is never even marked OOMKilled: it just exits 134 in a
+        # loop, which reads like an application bug rather than a memory one.
+        memory_request: 512Mi
+        memory_limit: 2Gi
+        cpu_request: 200m
+        cpu_limit: 1000m
 
 volumes:
   n8n-data:
