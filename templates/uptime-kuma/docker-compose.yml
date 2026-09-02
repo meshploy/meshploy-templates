@@ -5,6 +5,8 @@ services:
   uptime-kuma:
     image: louislam/uptime-kuma:1.23.16
     environment:
+      # Heap sized deliberately, not inferred from the cgroup limit.
+      NODE_OPTIONS: --max-old-space-size=384
       # Uptime Kuma reads UPTIME_KUMA_HOST as the address to BIND. A platform
       # that also derives a service-discovery variable from the service name
       # produces the same key meaning the opposite thing -- an address to reach

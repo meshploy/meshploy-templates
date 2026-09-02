@@ -20,6 +20,8 @@ services:
   umami:
     image: ghcr.io/umami-software/umami:postgresql-v2.19.0
     environment:
+      # Heap sized deliberately, not inferred from the cgroup limit.
+      NODE_OPTIONS: --max-old-space-size=384
       DATABASE_URL: postgresql://umami:${DB_PASSWORD}@umami-db:5432/umami
       DATABASE_TYPE: postgresql
       APP_SECRET: ${APP_SECRET}

@@ -11,6 +11,8 @@ services:
   verdaccio:
     image: verdaccio/verdaccio:6.10.1
     environment:
+      # Heap sized deliberately, not inferred from the cgroup limit.
+      NODE_OPTIONS: --max-old-space-size=384
       VERDACCIO_PORT: "4873"
     volumes:
       - verdaccio-storage:/verdaccio/storage

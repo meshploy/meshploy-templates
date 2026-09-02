@@ -13,6 +13,8 @@ services:
   n8n:
     image: n8nio/n8n:2.38.1
     environment:
+      # Heap sized deliberately, not inferred from the cgroup limit.
+      NODE_OPTIONS: --max-old-space-size=1536
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
       N8N_HOST: ${PRIMARY_DOMAIN}
       N8N_PORT: "5678"

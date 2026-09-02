@@ -10,6 +10,8 @@ services:
   code-server:
     image: linuxserver/code-server:4.135.0
     environment:
+      # Heap sized deliberately, not inferred from the cgroup limit.
+      NODE_OPTIONS: --max-old-space-size=768
       PASSWORD: ${EDITOR_PASSWORD}
       PUID: "1000"
       PGID: "1000"
