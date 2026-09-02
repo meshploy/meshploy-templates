@@ -1,0 +1,50 @@
+# Zot — an OCI-native container registry.
+#
+# ── NO PUBLIC ROUTE, ON PURPOSE ──────────────────────────────────────────────
+#
+# Zot's shipped config at /etc/zot/config.json has no authentication:
+#
+#     {"storage": {"rootDirectory": "/var/lib/registry"},
+#      "http": {"address": "0.0.0.0", "port": "5000", "compat": ["docker2s2"]},
+#      "log": {"level": "debug"}}
+#
+# Auth is configured in that file, and a template can supply environment and
+# volumes but not files — so anything this template deploys is a registry that
+# accepts anonymous pushes. Given a public hostname that is an open write
+# endpoint on the internet: anyone can push an image, and anything that later
+# pulls by tag gets whatever they pushed.
+#
+# So no PRIMARY_DOMAIN and no expose. Reachable in-cluster as
+# zot:5000 (or zot.<project>.svc.cluster.local:5000), which is what a registry
+# serving this mesh actually needs.
+#
+# To publish it, replace the config first: mount a config.json with an htpasswd
+# credential store under "http.auth", then add a route to this service. Doing it
+# in the other order leaves the registry open for however long that takes.
+#
+# ── STORAGE ──────────────────────────────────────────────────────────────────
+#
+# rootDirectory is /var/lib/registry in the shipped config, so that is the path
+# the volume has to mount — not /var/lib/zot, which the upstream examples use.
+# Images are the whole point of a registry: without this volume every push is
+# lost on the next restart.
+services:
+  zot:
+    image: ghcr.io/project-zot/zot:v2.1.20
+    volumes:
+      - zot-data:/var/lib/registry
+    x-meshploy:
+      type: application
+      deploy:
+        port: 5000
+        replicas: 1
+        # Zot is Go and modest at rest, but a push writes blobs through memory
+        # and dedup/GC walks the store. The platform default ceiling is enough
+        # for a small registry; the request reflects idle.
+        memory_request: 256Mi
+        memory_limit: 1Gi
+        cpu_request: 100m
+        cpu_limit: 1000m
+
+volumes:
+  zot-data:

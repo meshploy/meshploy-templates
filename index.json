@@ -396,6 +396,22 @@
           }
         }
       ]
+    },
+    {
+      "id": "zot",
+      "name": "Zot Registry",
+      "description": "OCI-native container registry. Cluster-internal — its default config has no authentication.",
+      "category": "application",
+      "version": "1.0.0",
+      "icon": "logo.svg",
+      "links": {
+        "website": "https://zotregistry.dev",
+        "source": "https://github.com/project-zot/zot"
+      },
+      "maintainers": [
+        "pritthishnath"
+      ],
+      "variables": null
     }
   ]
 }
