@@ -1,0 +1,78 @@
+# n8n backed by PostgreSQL.
+#
+# The single-service "n8n" template stores everything in SQLite on a node-local
+# volume. That is the right default for trying n8n out, and the wrong one for
+# running it: SQLite takes a single writer, so the app is pinned to one replica
+# on one node, and execution history grows into the same file the editor reads
+# from. n8n's own guidance is a dedicated database per instance.
+#
+# This variant provisions that database as a Meshploy-managed service, so it is
+# backed up, monitored, and reachable by name like any other.
+#
+# N8N_ENCRYPTION_KEY encrypts stored credentials. It is generated once and must
+# never change: rotating it makes every saved credential undecryptable, so treat
+# it as part of the data rather than as config.
+#
+# db_password is set explicitly rather than left blank. Meshploy generates one
+# when it is omitted, and the app would then have no way to learn it; declaring
+# it as a template variable lets the same generated value reach both sides.
+#
+# The volume stays. Postgres holds the workflows and executions, but n8n still
+# writes its own config and any binary data to ~/.n8n, and losing that loses the
+# instance's identity.
+services:
+  n8n:
+    image: n8nio/n8n:2.38.1
+    environment:
+      # Heap sized deliberately, not inferred from the cgroup limit.
+      NODE_OPTIONS: --max-old-space-size=1536
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      N8N_HOST: ${PRIMARY_DOMAIN}
+      N8N_PORT: "5678"
+      N8N_PROTOCOL: https
+      WEBHOOK_URL: https://${PRIMARY_DOMAIN}/
+      GENERIC_TIMEZONE: UTC
+      # Reached by its compose service name, which Meshploy publishes as an
+      # alias for the database's own workload.
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: n8n-db
+      DB_POSTGRESDB_PORT: "5432"
+      DB_POSTGRESDB_DATABASE: n8n
+      DB_POSTGRESDB_USER: n8n
+      DB_POSTGRESDB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - n8n-data:/home/node/.n8n
+    x-meshploy:
+      type: application
+      deploy:
+        port: 5678
+        replicas: 1
+        # The limit is a ceiling, not a reservation: only the request is held on
+        # the node, so a generous limit costs nothing until it is used.
+        #
+        # It has to be generous because Node sizes V8's heap from the CGROUP
+        # LIMIT, not from what the process needs. Measured at a 2Gi limit this
+        # instance settles at ~330Mi -- but at 512Mi V8 caps old space near
+        # 250MB, thrashes, and aborts with "Ineffective mark-compacts near heap
+        # limit" once the editor loads. It aborts itself before the cgroup kills
+        # it, so the pod is never even marked OOMKilled: it just exits 134 in a
+        # loop, which reads like an application bug rather than a memory one.
+        memory_request: 512Mi
+        memory_limit: 2Gi
+        cpu_request: 200m
+        cpu_limit: 1000m
+
+  n8n-db:
+    image: postgres:16
+    x-meshploy:
+      type: database
+      database:
+        engine: postgres
+        version: "16"
+        storage_gb: 5
+        db_name: n8n
+        db_user: n8n
+        db_password: ${DB_PASSWORD}
+
+volumes:
+  n8n-data:

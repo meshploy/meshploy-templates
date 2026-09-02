@@ -8,7 +8,11 @@
 # callback address, and a wrong value fails only when an external service calls
 # back.
 #
-# SQLite by default, which keeps this a single service.
+# SQLite, which keeps this a single service and makes it the quickest way to try
+# n8n. It is also the reason not to run it this way for long: SQLite takes one
+# writer, so this is pinned to a single replica on the one node holding the
+# volume, and execution history accumulates in the same file the editor reads
+# from. Deploy "n8n (PostgreSQL)" instead when the instance starts mattering.
 services:
   n8n:
     image: n8nio/n8n:2.38.1

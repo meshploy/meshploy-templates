@@ -1,6 +1,6 @@
-id: n8n
-name: n8n
-description: Workflow automation with a visual editor. Stores data in SQLite — see the PostgreSQL variant for real use.
+id: n8n-postgres
+name: n8n (PostgreSQL)
+description: Workflow automation backed by a managed PostgreSQL database.
 category: application
 version: 1.0.0
 icon: logo.svg
@@ -12,6 +12,8 @@ maintainers: [pritthishnath]
 variables:
   - key: N8N_ENCRYPTION_KEY
     generate: hex32
+  - key: DB_PASSWORD
+    generate: password
   - key: PRIMARY_DOMAIN
     generate: subdomain
     expose:
