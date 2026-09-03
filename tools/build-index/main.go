@@ -40,8 +40,11 @@ const (
 )
 
 var (
-	categories    = map[string]bool{"database": true, "cms": true, "analytics": true, "queue": true, "monitoring": true, "application": true}
-	generators    = map[string]bool{"password": true, "secret64": true, "hex32": true, "uuid": true, "subdomain": true}
+	categories = map[string]bool{"database": true, "cms": true, "analytics": true, "queue": true, "monitoring": true, "application": true}
+	generators = map[string]bool{"password": true, "secret64": true, "hex32": true, "uuid": true, "subdomain": true}
+	// bcryptRe matches the one DERIVED generator, `bcrypt(OTHER_KEY)`, which
+	// hashes another variable instead of producing a value of its own.
+	bcryptRe      = regexp.MustCompile(`^bcrypt\(([A-Za-z_][A-Za-z0-9_]*)\)$`)
 	placeholderRe = regexp.MustCompile(`\$\{([A-Z0-9_]+)\}`)
 	imageRe       = regexp.MustCompile(`(?m)^\s*image:\s*['"]?([^'"#\s]+)`)
 )
@@ -193,8 +196,9 @@ func validateTemplate(id string) (*manifest, []string) {
 	}
 
 	// ── Variables ────────────────────────────────────────────────────────────
-	keys := map[string]bool{}    // all declared keys
-	envKeys := map[string]bool{} // keys that must appear as ${VAR} (env-substitution)
+	keys := map[string]bool{}      // all declared keys
+	envKeys := map[string]bool{}   // keys that must appear as ${VAR} (env-substitution)
+	derived := map[string]string{} // derived key -> the key it hashes
 	for i, v := range m.Variables {
 		if v.Key == "" {
 			errs = append(errs, fmt.Sprintf("%s: variable #%d has no key", id, i))
@@ -210,13 +214,37 @@ func validateTemplate(id string) (*manifest, []string) {
 		if hasPrompt == hasGen {
 			errs = append(errs, fmt.Sprintf("%s: variable %q must be exactly one of 'prompt' or 'generate'", id, v.Key))
 		}
-		if hasGen && !generators[v.Generate] {
+		derivedFrom := ""
+		if mm := bcryptRe.FindStringSubmatch(v.Generate); mm != nil {
+			derivedFrom = mm[1]
+			derived[v.Key] = derivedFrom
+		} else if hasGen && !generators[v.Generate] {
 			errs = append(errs, fmt.Sprintf("%s: variable %q has unknown generator %q", id, v.Key, v.Generate))
 		}
 		// subdomain vars drive routing, not env substitution — exempt from needing a ${VAR}.
 		if v.Generate != "subdomain" {
 			envKeys[v.Key] = true
 		}
+	}
+
+	// A variable that only feeds a derived generator is used, just not as a
+	// ${VAR} in the compose -- a credential whose hash is what gets written is
+	// the whole point of deriving one. Requiring the plaintext to appear in the
+	// spec would defeat it.
+	for key, ref := range derived {
+		if !keys[ref] {
+			errs = append(errs, fmt.Sprintf("%s: variable %q hashes %q, which is not declared", id, key, ref))
+			continue
+		}
+		if ref == key {
+			errs = append(errs, fmt.Sprintf("%s: variable %q hashes itself", id, key))
+			continue
+		}
+		if _, chained := derived[ref]; chained {
+			errs = append(errs, fmt.Sprintf("%s: variable %q hashes %q, which is itself derived", id, key, ref))
+			continue
+		}
+		delete(envKeys, ref)
 	}
 
 	// ── Variable ↔ placeholder bijection ─────────────────────────────────────

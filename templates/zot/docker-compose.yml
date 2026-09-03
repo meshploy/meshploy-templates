@@ -1,33 +1,36 @@
 # Zot — an OCI-native container registry.
 #
-# ── NO PUBLIC ROUTE, ON PURPOSE ──────────────────────────────────────────────
+# ── AUTHENTICATION ───────────────────────────────────────────────────────────
 #
-# Zot's shipped config at /etc/zot/config.json has no authentication:
+# Zot's shipped config at /etc/zot/config.json has no authentication, and auth
+# is configurable in that file and nowhere else. This template replaces it with
+# a config that points at an htpasswd credential store, and writes that store as
+# a second file. Both are meshploy config files: stored encrypted, projected
+# into the container by subPath so they sit alongside what the image ships.
 #
-#     {"storage": {"rootDirectory": "/var/lib/registry"},
-#      "http": {"address": "0.0.0.0", "port": "5000", "compat": ["docker2s2"]},
-#      "log": {"level": "debug"}}
+# ZOT_PASSWORD is generated per install; read it from the stack's Variables tab
+# to run `docker login <host> -u admin`. ZOT_HTPASSWD is its bcrypt hash, and
+# the hash is what the file holds — so the plaintext is never in the config
+# file, the Kubernetes Secret, or the container.
 #
-# Auth is configured in that file, and a template can supply environment and
-# volumes but not files — so anything this template deploys is a registry that
-# accepts anonymous pushes. Given a public hostname that is an open write
-# endpoint on the internet: anyone can push an image, and anything that later
-# pulls by tag gets whatever they pushed.
+# The plaintext does sit in the stack's variables, unencrypted, exactly as every
+# other template's generated password does. Changing it there does NOT re-derive
+# the hash: to rotate the credential, edit /etc/zot/htpasswd in the Config tab
+# with a hash you generate yourself (`htpasswd -bBn admin <new>`).
 #
-# So no PRIMARY_DOMAIN and no expose. Reachable in-cluster as
-# zot:5000 (or zot.<project>.svc.cluster.local:5000), which is what a registry
-# serving this mesh actually needs.
-#
-# To publish it, replace the config first: mount a config.json with an htpasswd
-# credential store under "http.auth", then add a route to this service. Doing it
-# in the other order leaves the registry open for however long that takes.
+# accessControl gives the one user full rights on every repository and leaves
+# anonymous callers with none, so an unauthenticated pull returns 401 rather
+# than the repository list. defaultPolicy is empty on purpose: an empty policy
+# is no access, which is what anonymous should have on a registry with a public
+# hostname.
 #
 # ── STORAGE ──────────────────────────────────────────────────────────────────
 #
-# rootDirectory is /var/lib/registry in the shipped config, so that is the path
-# the volume has to mount — not /var/lib/zot, which the upstream examples use.
-# Images are the whole point of a registry: without this volume every push is
-# lost on the next restart.
+# rootDirectory has to match whatever the config says, and the config here is
+# ours, so /var/lib/registry is a choice rather than an inherited constraint —
+# kept because it is where the upstream image's default config points, so an
+# existing install's volume keeps working. Images are the whole point of a
+# registry: without this volume every push is lost on the next restart.
 services:
   zot:
     image: ghcr.io/project-zot/zot:v2.1.20
@@ -35,6 +38,36 @@ services:
       - zot-data:/var/lib/registry
     x-meshploy:
       type: application
+      files:
+        - path: /etc/zot/config.json
+          content: |
+            {
+              "storage": { "rootDirectory": "/var/lib/registry" },
+              "http": {
+                "address": "0.0.0.0",
+                "port": "5000",
+                "compat": ["docker2s2"],
+                "auth": { "htpasswd": { "path": "/etc/zot/htpasswd" } },
+                "accessControl": {
+                  "repositories": {
+                    "**": {
+                      "policies": [
+                        { "users": ["admin"], "actions": ["read", "create", "update", "delete"] }
+                      ],
+                      "defaultPolicy": []
+                    }
+                  },
+                  "adminPolicy": {
+                    "users": ["admin"],
+                    "actions": ["read", "create", "update", "delete"]
+                  }
+                }
+              },
+              "log": { "level": "info" }
+            }
+        - path: /etc/zot/htpasswd
+          content: |
+            admin:${ZOT_HTPASSWD}
       deploy:
         port: 5000
         replicas: 1

@@ -400,9 +400,9 @@
     {
       "id": "zot",
       "name": "Zot Registry",
-      "description": "OCI-native container registry. Cluster-internal — its default config has no authentication.",
+      "description": "OCI-native container registry, with a generated admin credential and anonymous access denied.",
       "category": "application",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "icon": "logo.svg",
       "links": {
         "website": "https://zotregistry.dev",
@@ -411,7 +411,24 @@
       "maintainers": [
         "pritthishnath"
       ],
-      "variables": null
+      "variables": [
+        {
+          "key": "ZOT_PASSWORD",
+          "generate": "password"
+        },
+        {
+          "key": "ZOT_HTPASSWD",
+          "generate": "bcrypt(ZOT_PASSWORD)"
+        },
+        {
+          "key": "PRIMARY_DOMAIN",
+          "generate": "subdomain",
+          "expose": {
+            "service": "zot",
+            "port": 5000
+          }
+        }
+      ]
     }
   ]
 }
