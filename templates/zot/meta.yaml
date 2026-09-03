@@ -2,7 +2,7 @@ id: zot
 name: Zot Registry
 description: OCI-native container registry, with a generated admin credential and anonymous access denied.
 category: application
-version: 1.1.0
+version: 1.2.0
 icon: logo.svg
 links:
   website: https://zotregistry.dev

@@ -24,6 +24,18 @@
 # is no access, which is what anonymous should have on a registry with a public
 # hostname.
 #
+# ── THE WEB UI ───────────────────────────────────────────────────────────────
+#
+# Zot serves the OCI API at /v2/ and nothing at / unless the `ui` extension is
+# on, so replacing the shipped config without an extensions block gave a working
+# registry whose hostname answered "404 page not found" in a browser. `ui`
+# needs `search`, which backs its GraphQL queries.
+#
+# Both are compiled into ghcr.io/project-zot/zot (a ~68MB binary layer -- the
+# minimal build is a third of that); the minimal image would log that it is
+# skipping them rather than fail to start. The UI is behind the same
+# accessControl as everything else: anonymous still gets 401.
+#
 # ── STORAGE ──────────────────────────────────────────────────────────────────
 #
 # rootDirectory has to match whatever the config says, and the config here is
@@ -63,7 +75,11 @@ services:
                   }
                 }
               },
-              "log": { "level": "info" }
+              "log": { "level": "info" },
+              "extensions": {
+                "search": { "enable": true },
+                "ui": { "enable": true }
+              }
             }
         - path: /etc/zot/htpasswd
           content: |
